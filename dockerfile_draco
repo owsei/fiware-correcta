@@ -1,0 +1,5 @@
+FROM ging/fiware-draco
+
+USER root
+# COPY ./draco /opt/nifi/nifi-current/
+RUN echo "NIFI-CURRENT directory copied successfully."

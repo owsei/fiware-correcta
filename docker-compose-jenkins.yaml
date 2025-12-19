@@ -1,0 +1,19 @@
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: dockerfile_jenkins
+    container_name: jenkins
+    hostname: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - ./jenkins_home:/var/jenkins_home
+    # restart: unless-stopped
+    networks:
+      - twin-fiware-demo
+
+networks:
+  twin-fiware-demo:
+    driver: bridge

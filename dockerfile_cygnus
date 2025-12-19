@@ -1,0 +1,22 @@
+FROM fiware/cygnus-ngsi
+RUN echo 'Se va a copiar fichero agent.conf'
+WORKDIR /temp
+COPY ./cygnus/cygnus-entrypoint.sh /temp/
+COPY ./cygnus/agent.conf .
+RUN echo 'Copiando ficheros...' 
+# RUN cp /temp/cygnus-entrypoint.sh /
+RUN echo 'Ficheros copiados correctamente.'
+
+# RUN chmod +x /temp/cygnus-entrypoint.sh && \
+#     ls -l /temp && \
+#     echo "Ejecutando script..." && \
+#     /temp/cygnus-entrypoint.sh
+
+
+# RUN chmod +x /temp/test.sh && \
+#     ls -l /temp && \
+#     echo "Ejecutando script..." && \
+#     /temp/test.sh
+
+# Usa la forma completa del CMD (con ruta absoluta)
+CMD ["echo", "HOLA MUNDO"]

@@ -1,0 +1,132 @@
+
+
+#********************* ORION *****************************
+#ORION VERSION
+GET http://localhost:1026/version
+###
+#ENTIDADES DADAS DE ALTA EN ORION
+ ###
+curl -X GET "http://localhost:1026/v2/entities/?options=keyValues" \
+  -H 'fiware-service: pamplona' \
+  -H 'fiware-servicepath:/urbanmovility' 
+###
+
+
+###SABER SI EL SERVICIO ESTA FUNCIONANDO
+curl -X GET 'http://localhost:4041/iot/about'
+###
+
+###*************************************************************************
+
+###CONFIGURAR DISPOSITIVOS JSON EN ORION IOTs
+curl -X POST "http://localhost:4041/iot/services" \
+  -H "Content-Type: application/json" \
+  -H "fiware-service: pamplona" \
+  -H "fiware-servicepath: /urbanmobility" \
+  -d '{
+    "services": [{
+      "apikey": "123456789abcd",
+      "cbroker": "http://orion:1026",
+      "entity_type": "vehicle",
+      "resource": "/iot/json"
+    }]
+  }'
+
+###
+
+
+
+###CYGNUS VERSION
+curl -X GET http://localhost:5080/v1/version
+
+###
+
+
+###SUBSCRIPCIONES EN ORION DE CYGNUS
+###
+curl -X GET http://localhost:1026/v2/subscriptions/ \
+    -H "Fiware-Service: pamplona" \
+    -H "Fiware-ServicePath: /urbanmobility"
+
+###
+
+###SUBCRIPCION PARA POSTGRES
+
+curl -X POST 'http://localhost:1026/v2/subscriptions'\
+  -H 'Content-Type: application/json' \
+  -H "Fiware-Service: pamplona" \
+  -H "Fiware-ServicePath: /urbanmobility"\
+    -d '{
+    "description": "Notify Cygnus of changes in IoT Agent",
+    "subject": {
+        "entities": [
+        {
+            "idPattern": ".*"
+        }
+        ]
+    },
+    "notification": {
+        "http": {
+          "url": "http://cygnus:5055/notify"
+        },
+        "attrs": [
+          "TimeInstant",
+          "vehicleid",
+          "license_plate",
+          "location",
+          "timedata",
+          "current_stop_sequence",
+          "stop_id",
+          "route_id",
+          "trip_id",
+          "direction_id",
+          "occupancy_percentage"
+        ]
+    },
+    "throttling": 0,
+    "covering":false
+    }'
+###
+
+curl -X POST 'http://localhost:1026/v2/subscriptions'\
+  -H 'Content-Type: application/json' \
+  -H "Fiware-Service: pamplona" \
+  -H "Fiware-ServicePath: /urbanmobility"\
+  -d '
+    {
+      "description": "UrbanMobility:EXTERIOR:vehicle",
+      "status": "active",
+      "subject": {
+        "entities": [
+          {
+            "id": ".*",
+            "isPattern": true,
+            "type": "vehicle"
+          }
+        ]
+      },    
+      "notification": {
+        "attrs": [
+          "TimeInstant",
+          "vehicleid",
+          "license_plate",
+          "location",
+          "timedata",
+          "current_stop_sequence",
+          "stop_id",
+          "route_id",
+          "trip_id",
+          "direction_id",
+          "occupancy_percentage"
+        ],
+        "httpCustom": {
+          "url": "https://cygnus:5055/notify",
+          "headers": {
+            "fiware-servicepath": "/urbanmobility"
+          }
+        }
+      }
+    }'
+
+###
+###EJEMPLO DE ACTUALIZACION DE ENTIDAD CON GEOJSON

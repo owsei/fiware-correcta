@@ -1,0 +1,102 @@
+
+###CONFIGURAR DISPOSITIVOS JSON EN ORION IOTs
+curl -X POST "http://localhost:4041/iot/services" \
+  -H "Content-Type: application/json" \
+  -H "fiware-service: pamplona" \
+  -H "fiware-servicepath: /urbanmovility" \
+  -d '{
+    "services": [{
+      "apikey": "123456789abcd",
+      "cbroker": "http://orion:1026",
+      "entity_type": "vehicle",
+      "resource": "/iot/json"
+    }]
+  }'
+
+###
+
+curl -X POST "http://localhost:4041/iot/services" \
+  -H "Content-Type: application/json" \
+  -H "fiware-service: pamplona" \
+  -H "fiware-servicepath: /urbanmobility" \
+  -d '{
+    "services": [{
+      "apikey": "123456789abcd2",
+      "cbroker": "http://orion:1026",
+      "entity_type": "gtfsshape",
+      "resource": "/iot/json"
+    }]
+  }'
+
+###
+
+###SUBCRIPCION PARA POSTGRES VEHICLE
+
+curl -X POST 'http://localhost:1026/v2/subscriptions'\
+  -H 'Content-Type: application/json' \
+  -H "Fiware-Service: pamplona" \
+  -H "Fiware-ServicePath: /urbanmobility"\
+    -d '{
+    "description": "Notify Cygnus of changes in IoT Agent",
+    "subject": {
+        "entities": [
+          {
+            "idPattern": ".*",
+            "type": "vehicle"
+          }
+        ],
+        "condition": {
+        "attrs": [
+          "TimeInstant"
+        ],
+        "notifyOnMetadataChange": true
+      }
+    },
+    "notification": {
+      "onlyChangedAttrs": false,
+      "attrsFormat": "normalized",
+        "http": {
+          "url": "http://cygnus:5055/notify"
+        },
+        "attrs": [
+          "TimeInstant",
+          "vehicleid",
+          "license_plate",
+          "location",
+          "timedata",
+          "current_stop_sequence",
+          "stop_id",
+          "route_id",
+          "trip_id",
+          "direction_id",
+          "occupancy_percentage"
+        ]
+    },
+    "throttling": 0,
+    "covering":false
+    }'
+###
+
+
+curl -iX POST \
+  'http://localhost:1026/v2/subscriptions' \
+  -H 'Content-Type: application/json' \
+  -H 'fiware-service: pamplona' \
+  -H 'fiware-servicepath: /urbanmobility' \
+  -d '{
+  "description": "Notify Draco 5060 of all context changes",
+  "subject": {
+    "entities": [
+      {
+        "idPattern": ".*",
+        "type": "gtfsshape"
+      }
+    ]
+  },
+  "notification": {
+    "http": {
+      "url": "http://cygnus:5055/notify"
+    }
+  },
+  "throttling": 0
+}'

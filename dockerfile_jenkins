@@ -1,0 +1,32 @@
+# FROM enkins/jenkins:2.528.2-lts-jdk21
+# USER root
+# RUN apt-get upgrade -y
+# RUN apt-get update 
+# RUN apt-get install -y python3-full 
+# RUN apt-get install python3-pip -y
+# RUN apt-get install pipx -y
+# RUN apt-get install -y python3-venv
+# WORKDIR /usr/bin/
+# # CMD ["pip", "install", "requests"]
+# # CMD ["python3 -m pip install requests"]
+# USER jenkins
+# Imagen base de Jenkins LTS con JDK 21
+
+FROM jenkins/jenkins:2.528.2-lts-jdk21
+
+USER root
+
+# Instalar Python sin el pip del sistema
+RUN apt-get update && \
+    apt-get install -y python3 python3-venv curl && \
+    python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install --upgrade pip && \
+    /opt/venv/bin/pip install requests gtfs-realtime-bindings && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Asegurar que el PATH apunte al venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+
+USER jenkins
+
