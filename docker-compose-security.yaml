@@ -4,16 +4,22 @@ services:
     image: fiware/orion
     container_name: orion
     hostname: orion
-    # ⚠️ NO exponer el 1026 al exterior
-    ports:
-      - "1026:1026"
     links:
       - mongo
     depends_on:
       - mongo
-    command: 
+    command:
       -dbURI mongodb://mongo
       -corsOrigin __ALL
+    labels:
+      - "traefik.enable=true"
+      # Ruta: http://localhost/orion/
+      - "traefik.http.routers.orion.rule=PathPrefix(`/orion`)"
+      - "traefik.http.routers.orion.entrypoints=web"
+      - "traefik.http.routers.orion.middlewares=keycloak-auth,orion-strip"
+      - "traefik.http.services.orion.loadbalancer.server.port=1026"
+      # Elimina el prefijo /orion antes de enviar al servicio
+      - "traefik.http.middlewares.orion-strip.stripprefix.prefixes=/orion"
     networks:
       - fiware-net
 
@@ -23,31 +29,24 @@ services:
     hostname: mongo
     ports:
       - "27017:27017"
-    # command: --nojournal
     volumes:
       - mongo_data:/data/db
     networks:
       - fiware-net
-  
+
   cygnus:
     image: fiware/cygnus-ngsi
     hostname: cygnus
     container_name: cygnus
-    # build:
-    #   context: .
-    #   dockerfile: dockerfile_cygnus
-    # depends_on:
-    #   - postgis
     ports:
       - "5051:5051"
       - "5055:5055"
       - "5056:5056"
       - "5057:5057"
-      - "5080:5080" 
+      - "5080:5080"
     environment:
       CYGNUS_SERVICE_PORT: 5055
       CYGNUS_POSTGRESQL_SERVICE_PORT: 5055
-      # PostgreSQL config
       CYGNUS_SKIP_CONF_GENERATION: 'true'
       CYGNUS_LOG_LEVEL: INFO
       CYGNUS_POSTGRESQL_HOST: timescale
@@ -56,23 +55,13 @@ services:
       CYGNUS_POSTGRESQL_USER: admin
       CYGNUS_POSTGRESQL_PASS: admin
       CYGNUS_POSTGRESQL_SERVICE: timescale
-      CYGNUS_POSTGRESQL_DATA_MODEL: dm-by-entity-type #dm-by-entity-type-database #dm-by-entity-type-database #dm-by-entity-type-database
+      CYGNUS_POSTGRESQL_DATA_MODEL: dm-by-entity-type
       CYGNUS_POSTGRESQL_ATTR_PERSISTENCE: column
-      
-      # CYGNUS_MYSQL_HOST : mysql
-      # CYGNUS_MYSQL_DB : orion
-      # CYGNUS_MYSQL_PORT : 3306
-      # CYGNUS_MYSQL_USER : root
-      # CYGNUS_MYSQL_PASS : 6447
-      # CYGNUS_MYSQL_DATA_MODEL : dm-by-entity-type
-      # CYGNUS_MYSQL_ATTR_PERSISTENCE: column
-      # CYGNUS_MYSQL_SERVICE_PORT : 5050
     volumes:
       - ./cygnus/agent.conf:/opt/apache-flume/conf/agent.conf:ro
-
     networks:
       - fiware-net
-  
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: pgadmin
@@ -81,10 +70,6 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "8088:80"
-    # depends_on:
-      # - timescale
-    # volumes:
-    #   - ./pgadmin_data:/var/lib/pgadmin
     networks:
       - fiware-net
 
@@ -96,14 +81,12 @@ services:
     depends_on:
       - mongo
     environment:
-      IOTA_CB_HOST : orion
-      IOTA_CB_PORT : 1026
+      IOTA_CB_HOST: orion
+      IOTA_CB_PORT: 1026
       IOTA_NORTH_PORT: 4041
-      IOTA_REGISTRY_TYPE: mongo 
+      IOTA_REGISTRY_TYPE: mongo
       IOTA_LOG_LEVEL: DEBUG
-      # IOTA_TIMESTAMP: true
       IOTA_CB_NGSI_VERSION: v2
-      # IOTA_AUTOCAST: true
       IOTA_MONGO_HOST: mongo
       IOTA_MONGO_PORT: 27017
       IOTA_MONGO_DB: orion
@@ -113,6 +96,14 @@ services:
     ports:
       - "4041:4041"
       - "7896:7896"
+    labels:
+      - "traefik.enable=true"
+      # Puerto 4041 — API de gestión, protegida con SSO
+      - "traefik.http.routers.iota.rule=PathPrefix(`/iota`)"
+      - "traefik.http.routers.iota.entrypoints=web"
+      - "traefik.http.routers.iota.middlewares=keycloak-auth,iota-strip"
+      - "traefik.http.services.iota.loadbalancer.server.port=4041"
+      - "traefik.http.middlewares.iota-strip.stripprefix.prefixes=/iota"
     networks:
       - fiware-net
 
@@ -122,24 +113,32 @@ services:
     build:
       context: .
       dockerfile: dockerfile_fastapi
-    # depends_on:
-    #   - postgis
-    ports:
-      - "8000:8000"
+    labels:
+      - "traefik.enable=true"
+      # Ruta: http://localhost/api/
+      - "traefik.http.routers.fastapi.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.fastapi.entrypoints=web"
+      - "traefik.http.routers.fastapi.middlewares=keycloak-auth,fastapi-strip"
+      - "traefik.http.services.fastapi.loadbalancer.server.port=8000"
+      - "traefik.http.middlewares.fastapi-strip.stripprefix.prefixes=/api"
     networks:
       - fiware-net
-  
-  # ── Nginx Server ───────────────────────────────
+
+  # ── Nginx Web (tu app web) ─────────────────────
   nginx_server:
     hostname: nginx
     container_name: nginx
     build:
       context: .
       dockerfile: dockerfile_nginx
-    ports:
-      - "89:80"
-    # depends_on:
-      # - fastapi
+    labels:
+      - "traefik.enable=true"
+      # Ruta: http://localhost/web/
+      - "traefik.http.routers.nginx-web.rule=PathPrefix(`/web`)"
+      - "traefik.http.routers.nginx-web.entrypoints=web"
+      - "traefik.http.routers.nginx-web.middlewares=keycloak-auth,nginx-strip"
+      - "traefik.http.services.nginx-web.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.nginx-strip.stripprefix.prefixes=/web"
     networks:
       - fiware-net
 
@@ -151,17 +150,16 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: fiware
+      POSTGRES_DB: pamplona
       PGDATA: /home/postgres/pgdata
     ports:
       - "5432:5432"
     volumes:
       - ./postgis:/home/postgres/pgdata
-      - ./timescale/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - ./timescale/init-keycloak.sql:/docker-entrypoint-initdb.d/init-keycloak.sql:ro
     user: "0:0"
-    # restart: unless-stopped
     networks:
-      -  fiware-net
+      - fiware-net
 
   # ── Identity Manager ──────────────────────────
   keycloak:
@@ -186,27 +184,51 @@ services:
     volumes:
       - ./keycloak-data:/opt/keycloak/data
     networks:
-      -  fiware-net
+      - fiware-net
 
-   # ── PEP Proxy ─────────────────────────
+  # ── Traefik (reverse proxy) ───────────────────
+  # Dashboard: http://localhost:8090
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    hostname: traefik
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=fiware-net
+      - --entrypoints.web.address=:80
+      - --log.level=INFO
+    ports:
+      - "81:80"      # Punto de entrada de todas las apps
+      - "8090:8080"  # Dashboard de Traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - oauth2-proxy
+    networks:
+      - fiware-net
+
+  # ── PEP Proxy ─────────────────────────────────
+  # oauth2-proxy actúa como middleware forwardAuth de Traefik.
+  # Traefik pregunta a oauth2-proxy si la petición está autenticada
+  # antes de enrutarla al servicio destino. Si no lo está, redirige
+  # automáticamente al login de Keycloak.
   oauth2-proxy:
     image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
     container_name: oauth2-proxy
     hostname: oauth2-proxy
-    depends_on:
-      - keycloak
-      - nginx_server
-      - nginx-reverse
-    ports:
-      - "1027:4180"
     command: >
       --provider=keycloak-oidc
       --client-id=fiware-client
       --client-secret=sx81Yc9NP09zbv22ra3AO6865pK357IM
       --oidc-issuer-url=http://keycloak:8080/realms/fiware
-      
-      --upstream=http://nginx-reverse:81
+
+      --upstream=static://202
       --http-address=0.0.0.0:4180
+      --redirect-url=http://localhost/oauth2/callback
+
       --skip-provider-button=true
       --email-domain="*"
       --skip-jwt-bearer-tokens=true
@@ -214,34 +236,29 @@ services:
       --oidc-email-claim=sub
 
       --cookie-secret=mHBltNpc++gK92n7NEQLQw==
-      
+
       --pass-authorization-header=true
       --insecure-oidc-allow-unverified-email=true
       --insecure-oidc-skip-issuer-verification=true
-    networks:
-      -  fiware-net
-
-  nginx-reverse:
-    image: nginx:alpine
-    container_name: nginx-reverse
-    hostname: nginx-reverse
+    labels:
+      - "traefik.enable=true"
+      # Ruta del callback OAuth2 (necesaria para el flujo de login)
+      - "traefik.http.routers.oauth2-proxy.rule=PathPrefix(`/oauth2`)"
+      - "traefik.http.routers.oauth2-proxy.entrypoints=web"
+      - "traefik.http.services.oauth2-proxy.loadbalancer.server.port=4180"
+      # Middleware forwardAuth que usan todos los servicios protegidos
+      - "traefik.http.middlewares.keycloak-auth.forwardauth.address=http://oauth2-proxy:4180/oauth2/auth"
+      - "traefik.http.middlewares.keycloak-auth.forwardauth.trustForwardHeader=true"
+      - "traefik.http.middlewares.keycloak-auth.forwardauth.authResponseHeaders=X-Auth-Request-User,X-Auth-Request-Email,Authorization"
     depends_on:
-      - orion
-      - nginx_server
-      - fastapi
-    ports:
-      - "81:81"
-    volumes:
-      - ./nginx-reserve/nginx-proxy.conf:/etc/nginx/conf.d/default.conf:ro
+      - keycloak
+    restart: unless-stopped
     networks:
       - fiware-net
 
-
-
 volumes:
   mongo_data:
-  
+
 networks:
   fiware-net:
     external: true
-    
