@@ -1,20 +1,52 @@
 
-@token=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ0M3BNOWF5T016Z1lJVlBQMzBzNEZ2c2xKYjdEMEZJenZrbTlSNEtwSHFjIn0.eyJleHAiOjE3NzgxMDY1ODUsImlhdCI6MTc3ODEwNjI4NSwianRpIjoidHJydGNjOmY0ZjY5N2QzLTVmM2YtMGFiYi0wMWQ0LWY4OTc5MGIxOGIwOCIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9yZWFsbXMvZml3YXJlIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjFhZDU3NmVlLTk3YjctNDU0OC04MWM5LTY2OTYzOTRlNmUzMiIsInR5cCI6IkJlYXJlciIsImF6cCI6ImZpd2FyZS1jbGllbnQiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbImh0dHA6Ly9vcmlvbjoxMDI2Il0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZWZhdWx0LXJvbGVzLWZpd2FyZSIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJmaXdhcmUtY2xpZW50Ijp7InJvbGVzIjpbInVtYV9wcm90ZWN0aW9uIl19LCJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJjbGllbnRIb3N0IjoiMTcyLjE4LjAuMSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwicHJlZmVycmVkX3VzZXJuYW1lIjoic2VydmljZS1hY2NvdW50LWZpd2FyZS1jbGllbnQiLCJjbGllbnRBZGRyZXNzIjoiMTcyLjE4LjAuMSIsImNsaWVudF9pZCI6ImZpd2FyZS1jbGllbnQifQ.i5uuUbeejWiT3yXaSD4KdAa0VWoFmm4yrPlCc_UXG9o6iRuNgtebwszHbn4FV26G9JoW8cu5fC6wwjoZcPhPgcvHm9SAykE2Q_9w8ubZjg0k1Im-X53Kdiowbd1ekTMJhakv5NYkd9jVrEuEB9MLHDIVwFwNXwacCsmDY43Vl4otaAKY-xjhdAe_Qe5UWj7WzlQ2xAMeAUCDuZFbmoaI5p5JGvCKMlxDXkgR2e5_xNHz4umOWye7yfzSp5tuxq1u5-lSSjV_RfuYnhZs92jDjqys7Q5toDaLL255Vw2RmsnQtyqhFixTi_tpCFuz5ScgPVjGWUWfJ_sGBNLnG8pvkQ
+@token=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJNT0JteEpKMWNJbno5Y1Rwb1hOM2E2LUVjYnFMZ2hoZVZGTENIcTdhV3cwIn0.eyJleHAiOjE3Nzg0ODg0MDMsImlhdCI6MTc3ODQ4ODEwMywianRpIjoib25ydHJvOmEwMTM4YjZlLWE4ZGEtZjBmZi0wMmYyLWNmNGUyNTU2ZTI2YyIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9yZWFsbXMvZml3YXJlIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjY3NDZmYmE0LTEyYmQtNDU1MC1iODZiLTk0ZTRjZGI5MjY4ZSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImZpd2FyZS1jbGllbnQtdXNlcnMiLCJzaWQiOiI3WTNCU2VlVHhxTUdlWWhkU09pX2oyUHkiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIi8qIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZWZhdWx0LXJvbGVzLWZpd2FyZSIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6ImVtYWlsIHByb2ZpbGUiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6IlBlZHJvIEVzcGFyemEiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwZWRybyIsImdpdmVuX25hbWUiOiJQZWRybyIsImZhbWlseV9uYW1lIjoiRXNwYXJ6YSIsImVtYWlsIjoicG1lc3BhcnphQGl0cmFjYXNhLmVzIn0.IMS0En-xENNYHUaLgFLO_wfaTcgJw45HVkpa1QCbxsLt9WFdD-9gG5rg9-hK_RKp0kAmJCOql_N0h9eLaKG1MzmvY2yBDDqm1g73TsQ17i8GQt32sHb7AAV8vmY-7aVauFWvdnRcwmygOWLkGsGfEEd10ORTupD95nee8lqV0X_Qk2pKidQqAW4M6v0NqT0TGTre25u7lztAzaiemt1rwDZffwx4hDnbgEb6B39U_z9pvAv4EmIZqYqs43mBHGXrH-sXb6LK3v9SZO9oaqsDib_As5j_fE-fsBsHcZH6ZmhKi5R0gioyVEZ4iTht-MpDdf8nO92ttqNXVX2R1OYCig
 
-###
+### client credentials flow
 curl -s -X POST \
   http://localhost:8080/realms/fiware/protocol/openid-connect/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=client_credentials" \
   -d "client_id=fiware-client" \
-  -d "client_secret=sx81Yc9NP09zbv22ra3AO6865pK357IM" \
+  -d "client_secret=seqduAnVFlVJ6pDbucb0FvwH8hLeGTBN" 
 
+
+###  autenticacion con usuario y contraseña
+curl -s -X POST \
+  http://localhost:8080/realms/fiware/protocol/openid-connect/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password" \
+  -d "client_id=fiware-client-users" \
+  -d "username=pedro" \
+  -d "password=1111"
 
 ####
-curl http://localhost:1027/version \
+curl http://localhost:81/api/ \ 
     -H 'Authorization: Bearer {{token}}' 
  
 
+### ORION CALLS
+###
+curl http://localhost:81/orion/version \
+ -H 'Authorization: Bearer {{token}}' 
 
 ###
-GET http://orion:1026/v2/entities 
+curl -X GET http://localhost:81/orion/v2/subscriptions/ \
+  -H 'Authorization: Bearer {{token}}' \
+  -H "Fiware-Service: pamplona" \
+  -H "Fiware-ServicePath: /urbanmobility"
+
+###    IOT AGENT CALLS
+
+### ESTADO DE EL IOT AGENT
+curl http://localhost:81/iota/iot/about \
+  -H 'Authorization: Bearer {{token}}' 
+
+
+### CYGNUS VERSION
+curl http://localhost:81/cygnus/v1/version \
+  -H 'Authorization: Bearer {{token}}' 
+
+
+
+
+
