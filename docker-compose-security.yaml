@@ -111,24 +111,26 @@ services:
       IOTA_HTTP_PORT: 7896
       IOTA_PROVIDER_URL: http://iot-agent-json:4041
       IOTA_DEFAULT_RESOURCE: /iot/json
-    ports:
-      - "4041:4041"
-      - "7896:7896"
+    # ports:
+    #   - "4041:4041"
+    #   - "7896:7896"
     labels:
       - "traefik.enable=true"
-      # Puerto 4041 — API de gestión, protegida con SSO
-      - "traefik.http.routers.iota-admin.rule=PathPrefix(`/iota-admin`)"
-      - "traefik.http.routers.iota-admin.entrypoints=web"
-      - "traefik.http.routers.iota-admin.middlewares=keycloak-auth,iota-strip"
-      - "traefik.http.services.iota-admin.loadbalancer.server.port=4041"
-      - "traefik.http.middlewares.iota-strip.stripprefix.prefixes=/iota-admin"
+      # API northbound del IoT Agent - puerto 4041
+      - "traefik.http.routers.iot-json-admin.rule=PathPrefix(`/iot-json-admin`)"
+      - "traefik.http.routers.iot-json-admin.entrypoints=web"
+      - "traefik.http.routers.iot-json-admin.middlewares=keycloak-auth,iot-json-admin-strip"
+      - "traefik.http.routers.iot-json-admin.service=iot-json-admin"
+      - "traefik.http.services.iot-json-admin.loadbalancer.server.port=4041"
+      - "traefik.http.middlewares.iot-json-admin-strip.stripprefix.prefixes=/iot-json-admin"
 
-      # Puerto 7896 — API de gestión, protegida con SSO
-      - "traefik.http.routers.iota.rule=PathPrefix(`/iota`)"
-      - "traefik.http.routers.iota.entrypoints=web"
-      - "traefik.http.routers.iota.middlewares=keycloak-auth,iota-strip"
-      - "traefik.http.services.iota.loadbalancer.server.port=7896"
-      - "traefik.http.middlewares.iota-strip.stripprefix.prefixes=/iota"
+      # Endpoint HTTP para dispositivos - puerto 7896
+      - "traefik.http.routers.iot-json.rule=PathPrefix(`/iot-json`)"
+      - "traefik.http.routers.iot-json.entrypoints=web"
+      - "traefik.http.routers.iot-json.middlewares=keycloak-auth,iot-json-strip"
+      - "traefik.http.routers.iot-json.service=iot-json"
+      - "traefik.http.services.iot-json.loadbalancer.server.port=7896"
+      - "traefik.http.middlewares.iot-json-strip.stripprefix.prefixes=/iot-json"
     networks:
       - fiware-net
 
@@ -138,6 +140,8 @@ services:
     build:
       context: .
       dockerfile: dockerfile_fastapi
+    ports:
+      - "8000:8000"
     labels:
       - "traefik.enable=true"
       # Ruta: http://localhost/api/
@@ -201,6 +205,7 @@ services:
     hostname: keycloak
     ports:
       - "8080:8080"
+      - "9000:9000"
     environment:
       KC_DB: postgres
       KC_DB_URL_HOST: timescale
@@ -214,12 +219,6 @@ services:
     depends_on:
       - timescale
     command: start-dev
-    healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK'"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
     volumes:
       - ./keycloak-data:/opt/keycloak/data
     networks:
@@ -279,6 +278,8 @@ services:
       --pass-authorization-header=true
       --insecure-oidc-allow-unverified-email=true
       --insecure-oidc-skip-issuer-verification=true
+    ports:
+      - "4180:4180"
     labels:
       - "traefik.enable=true"
       # Ruta del callback OAuth2 (necesaria para el flujo de login)
@@ -290,8 +291,7 @@ services:
       - "traefik.http.middlewares.keycloak-auth.forwardauth.trustForwardHeader=true"
       - "traefik.http.middlewares.keycloak-auth.forwardauth.authResponseHeaders=X-Auth-Request-User,X-Auth-Request-Email,Authorization"
     depends_on:
-      keycloak:
-        condition: service_healthy
+      - keycloak
     restart: always
     networks:
       - fiware-net
