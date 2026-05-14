@@ -296,8 +296,6 @@ services:
     networks:
       - fiware-net
 
-
-
 volumes:
   mongo_data:
 

@@ -1,0 +1,48 @@
+services:
+  apisix:
+    image: apache/apisix
+    container_name: apisix
+    hostname: apisix
+    ports:
+      - "9080:9080"
+      - "9443:9443"
+      - "9091:9091"
+    # restart: unless-stopped
+    # volumes:
+    #   - ./apisix/conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+    #   - ./apisix/conf/log4j2.xml:/usr/local/apisix/conf/log4j2.xml:ro
+    #   - ./apisix/conf/ssl:/usr/local/apisix/conf/ssl:ro
+    networks:
+      - apisix
+
+  etcd:
+    image: bitnamilegacy/etcd:3.5.7
+    container_name: etcd
+    hostname: etcd
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    restart: unless-stopped
+    networks:
+      - apisix
+  
+  # apisix-dashboard:
+  #   image: apache/apisix-dashboard:2.15.0-alpine
+  #   container_name: apisix-dashboard
+  #   hostname: apisix-dashboard
+  #   ports:
+  #     - "9000:9000"
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./apisix-dashboard/conf/config.yaml:/usr/local/apisix-dashboard/conf/config.yaml:ro
+  #   networks:
+  #     - apisix
+
+networks:
+  apisix:
+    driver: bridge
+    external: true

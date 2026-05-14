@@ -1,0 +1,66 @@
+services:
+  # timescale:
+  #   image: timescale/timescaledb-ha:pg16-ts2.17-all
+  #   container_name: timescale
+  #   hostname: timescale
+  #   environment:
+  #     POSTGRES_USER: admin
+  #     POSTGRES_PASSWORD: admin
+  #     POSTGRES_DB: pamplona
+  #     PGDATA: /home/postgres/pgdata
+    
+  #   volumes:
+  #     - ./postgis:/home/postgres/pgdata
+  #     - ./timescale-init/init-db-keycloak.sql:/docker-entrypoint-initdb.d/init-db-keycloak.sql:ro
+  #   user: "0:0"
+  
+  server:
+    hostname: authentik
+    container_name: authentik
+    command: server
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: timescale
+      AUTHENTIK_POSTGRESQL__NAME: pamplona
+      AUTHENTIK_POSTGRESQL__PASSWORD: admin
+      AUTHENTIK_POSTGRESQL__USER: admin
+      AUTHENTIK_POSTGRESQL__DEFAULT_SCHEMA: autentik
+      AUTHENTIK_SECRET_KEY: mHBltNpc++gK92n7NEQLQw==
+    image: authentik/server:2026.5.0-rc2
+    ports:
+    - "9001:9000"
+    - "9443:9443"
+    restart: unless-stopped
+    shm_size: 512mb
+    volumes:
+      - ./authentik/data:/data
+      - ./authentik/custom-templates:/templates
+    networks:
+      - fiware-net
+
+
+  worker:
+    command: worker
+    hostname: authentik-worker
+    container_name: authentik-worker
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: timescale
+      AUTHENTIK_POSTGRESQL__NAME: pamplona
+      AUTHENTIK_POSTGRESQL__PASSWORD: admin
+      AUTHENTIK_POSTGRESQL__USER: admin
+      AUTHENTIK_SECRET_KEY: mHBltNpc++gK92n7NEQLQw==
+    image: authentik/server:2026.5.0-rc2
+    restart: unless-stopped
+    shm_size: 512mb
+    user: root
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ./authentikw/data:/data
+    - ./authentikw/certs:/certs
+    - ./authentikw/custom-templates:/templates
+    networks:
+      - fiware-net
+
+networks:
+  fiware-net:
+    driver: bridge
+    external: true
