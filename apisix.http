@@ -1,0 +1,12 @@
+curl -i -X GET "http://owsei.ddns.net:9080/test/get?foo1=bar1&foo2=bar2" -H "Host: owsei.ddns.net" -H "X-Forwarded-For:
+
+
+
+####
+curl -i -X GET "http://owsei.ddns.net:9080/test/get?foo1=bar1&foo2=bar2" -H "Host: owsei.ddns.net"
+
+###
+curl -i -X GET "http://127.0.0.1:9080/test/get?foo=1" -H "Host: owsei.ddns.net"
+
+###
+curl -i -X GET "http://owsei.ddns.net:9080/test/get?foo1=1&foo2=2"

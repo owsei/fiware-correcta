@@ -3,16 +3,16 @@
 
 ### client credentials flow
 curl -s -X POST \
-  http://localhost:8080/realms/fiware/protocol/openid-connect/token \
+  http://owsei.ddns.net:8080/realms/fiware/protocol/openid-connect/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=client_credentials" \
   -d "client_id=fiware-client" \
-  -d "client_secret=mRDyxY3deeW9WChqjiKsGvhtHj9iHHe1" 
+  -d "client_secret=Zb6ZN3u10BBOETGm7qKSH8DjG7zJ7c5R" 
 
 
 ###  autenticacion con usuario y contraseña
 curl -s -X POST \
-  http://localhost:8080/realms/fiware/protocol/openid-connect/token \
+  http://owsei.ddns.net:8080/realms/fiware/protocol/openid-connect/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=password" \
   -d "client_id=fiware-client-users" \

@@ -154,24 +154,24 @@ services:
       - fiware-net
 
   # ── Nginx Web (tu app web) ─────────────────────
-  # nginx_server:
-  #   hostname: nginx
-  #   container_name: nginx
-  #   build:
-  #     context: .
-  #     dockerfile: dockerfile_nginx
-  #   # ports:
-  #   #   - "89:80"
-  #   labels:
-  #     - "traefik.enable=true"
-  #     # Ruta: http://localhost/web/
-  #     - "traefik.http.routers.nginx-web.rule=PathPrefix(`/web`)"
-  #     - "traefik.http.routers.nginx-web.entrypoints=web"
-  #     - "traefik.http.routers.nginx-web.middlewares=keycloak-auth,nginx-strip"
-  #     - "traefik.http.services.nginx-web.loadbalancer.server.port=80"
-  #     - "traefik.http.middlewares.nginx-strip.stripprefix.prefixes=/web"
-  #   networks:
-  #     - fiware-net
+  nginx_server:
+    hostname: nginx
+    container_name: nginx
+    build:
+      context: .
+      dockerfile: dockerfile_nginx
+    ports:
+      - "89:80"
+    labels:
+      - "traefik.enable=true"
+      # Ruta: http://localhost/web/
+      - "traefik.http.routers.nginx-web.rule=PathPrefix(`/web`)"
+      - "traefik.http.routers.nginx-web.entrypoints=web"
+      - "traefik.http.routers.nginx-web.middlewares=keycloak-auth,nginx-strip"
+      - "traefik.http.services.nginx-web.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.nginx-strip.stripprefix.prefixes=/web"
+    networks:
+      - fiware-net
 
   # ── TimescaleDB ───────────────────────────────
   timescale:
@@ -227,7 +227,7 @@ services:
   # ── Traefik (reverse proxy) ───────────────────
   # Dashboard: http://localhost:8090
   traefik:
-    image: traefik:v3.7.0
+    image: traefik:v3.7.1
     container_name: traefik
     hostname: traefik
     command:
@@ -280,6 +280,9 @@ services:
       --insecure-oidc-skip-issuer-verification=true
     ports:
       - "4180:4180"
+    depends_on:
+      keycloak:
+       
     labels:
       - "traefik.enable=true"
       # Ruta del callback OAuth2 (necesaria para el flujo de login)
@@ -290,23 +293,23 @@ services:
       - "traefik.http.middlewares.keycloak-auth.forwardauth.address=http://oauth2-proxy:4180/oauth2/auth"
       - "traefik.http.middlewares.keycloak-auth.forwardauth.trustForwardHeader=true"
       - "traefik.http.middlewares.keycloak-auth.forwardauth.authResponseHeaders=X-Auth-Request-User,X-Auth-Request-Email,Authorization"
-    depends_on:
-      - keycloak
     restart: always
     networks:
       - fiware-net
 
-
+  
   #────── Apisix Proxy ───────────────────────────────
   apisix:
     image: apache/apisix:3.16.0-ubuntu
+    container_name: apisix
+    hostname: apisix
     restart: always
     volumes:
       - ./apisix_conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
     depends_on:
       - etcd
     ports:
-      - "9180:9180/tcp"
+      - "80:9180/tcp"
       - "9080:9080/tcp"
       - "9091:9091/tcp"
       - "9443:9443/tcp"
@@ -316,6 +319,8 @@ services:
   
   etcd:
     image: bitnamilegacy/etcd:3.5.11
+    container_name: etcd
+    hostname: etcd
     restart: always
     volumes:
       - ./etcd_data:/bitnami/etcd
@@ -328,7 +333,6 @@ services:
       - "2379:2379/tcp"
     networks:
       - fiware-net
-
 
 volumes:
   mongo_data:
