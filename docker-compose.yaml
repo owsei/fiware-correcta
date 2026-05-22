@@ -130,7 +130,7 @@ services:
       - fiware-net
   
   # ── Nginx Server ───────────────────────────────
-  nginx_server:
+  nginx:
     hostname: nginx
     container_name: nginx
     build:
