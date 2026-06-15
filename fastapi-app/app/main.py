@@ -1,6 +1,6 @@
 import uvicorn
 from typing import Union, Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi import HTTPException
 import psycopg2
 from pymongo import MongoClient
@@ -11,17 +11,31 @@ import  dbConfig
 import serviceMongoOrion
 import urbanMovility
 import serviceOrionSettings
+from confluent_kafka import Producer,Consumer, KafkaError
+import json
+
+from sqlalchemy import create_engine
 
 MONGO_URI = "mongodb://localhost:27017"
 MONGO_DB = "mi_base"
 
 app = FastAPI()
+
 # Lista de orígenes permitidos
 origins = [
     "http://localhost:5173",
     "http://locahost"  # Vite dev server
     # Puedes agregar más orígenes si los necesitas
 ]
+
+producer = Producer({
+    "bootstrap.servers": "kafka:9092"
+})
+
+engine = create_engine(
+    "postgresql://admin:admin@timescale:5432/pamplona"
+)
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -32,11 +46,83 @@ app.add_middleware(
 )
 
 
+### FUNCION PARA CONVERTIR ENTIDADES NGSI A FORMATO PLANO
+def ngsi_to_flat(entity,fiware_service,fiware_servicepath):
+
+    flat = {
+        "entityid": entity["id"],
+        "entitytype": entity["type"],
+        "fiware_service": fiware_service,
+        "fiware_servicepath": fiware_servicepath
+    }
+
+    for key, value in entity.items():
+
+        if key in ["id", "type"]:
+            continue
+
+        if (
+            isinstance(value, dict)
+            and "value" in value
+        ):
+            flat[key] = value["value"]
+
+    print(f"Flat entity: {json.dumps(flat)}")
+    return flat
+
+
+
+@app.post("/notify")
+async def notify(request: Request):
+    fiware_service = request.headers.get("fiware-service")
+    print(f"Fiware Service: {fiware_service}")
+    fiware_servicepath = request.headers.get("fiware-servicepath")
+    print(f"Fiware Service Path: {fiware_servicepath}")
+
+    payload = await request.json()
+    print(f"Payload received: {json.dumps(payload)}")
+
+    for entity in payload["data"]:
+        flat = ngsi_to_flat(entity, fiware_service, fiware_servicepath)
+        producer.produce(
+            topic=fiware_service + "_" + flat["entitytype"],
+            value=json.dumps(flat).encode("utf-8"),
+            key=flat["entityid"]
+        )
+    producer.flush()
+    return {"status": "ok"}
+
+
+    # print(f"Payload received: {json.dumps(payload)}")
+    
+    # if 'entity_type' not in payload:
+    #     print("Error: 'entity_type' not found in payload")
+    #     payload['entity_type'] = 'events'
+    #     print(f"Producing message to topic: fiware-events")
+    # else:
+    #     print(f"Producing message to topic: fiware-{payload['entity_type']}")
+    
+    # ### TIENE DATOS PARA PRODUCIR EN KAFKA
+    # if 'data' not in payload:
+    #     print("Error: 'data' not found in payload")
+    #     return {"status": "NO DATA FOUND"}
+    # else:
+    #     data=payload["data"]
+    #     print(f"Data type: {type(data)}")
+    #     print(json.dumps(payload, indent=2))
+
+    #     # producer.produce(
+    #     #     topic="fiware-"+ payload['entity_type'],
+    #     #     value=json.dumps(payload.data).encode("utf-8")
+    #     # )
+    #     print(f"Producing message to topic:{json.dumps(payload.data)}")
+    #     producer.flush()
+    #     return {"status": "ok"}
+
 
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
-
 
 @app.get("/db-status-postgis")
 def db_status():
@@ -46,7 +132,6 @@ def db_status():
         return {"status": "PostGIS is connected"}
     except Exception as e:
         return {"status": f"Failed to connect: {e}"}
-    
     
 @app.get("/db-status-mongo")
 async def db_status():
@@ -60,7 +145,6 @@ async def db_status():
     except Exception as e:
         return {"status": f"Failed to connect: {e}"}
     
-
 @app.get("/getOrionServices")
 def getOrionServices():
     print(f"Obteniendo servicios Orion")
@@ -75,8 +159,6 @@ def getOrionServicesWithServicePath(servicie: Optional[str] = ''):
     results=serviceMongoOrion.getOrionServicesWithServicePath(servicie)
     return results
 
-
-
 @app.post("/setOrionService/{service}")
 def setOrionService(service):
     print(f"Creacion servicio {service} en orion")
@@ -87,8 +169,6 @@ def setOrionService(service):
         return results
     else:
         raise HTTPException(status_code=404, detail="No se creo el servicio {service}") 
-
-
 
 @app.get("/getOrionServicesPath/")
 @app.get("/getOrionServicesPath/{service}")
@@ -102,7 +182,6 @@ def getOrionServicesPath(service: Optional[str] = ''):
     else:
         raise HTTPException(status_code=404, detail="No se encontraron resultados de subservicios de Orion") 
 
-
 @app.get("/busPositions/")
 def BusPoitions():
     print(f"Obteniendo posiciones de urbanMovility")
@@ -111,7 +190,6 @@ def BusPoitions():
         return results
     else:
         raise HTTPException(status_code=404, detail="No se encontraron posiciones de urbanMovility")
-
 
 # ORION WEB SETTINGS
 @app.get("/getOrionWebSettings")
@@ -131,8 +209,6 @@ def setOrionWebSettings(data: str):
         return results
     else:
         raise HTTPException(status_code=404, detail="No se encontraron configuraciones web de Orion")
-
-
 
 
 if __name__ == "__main__":

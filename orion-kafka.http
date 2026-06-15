@@ -1,0 +1,64 @@
+
+
+#********************* VERSIONES *****************************
+#ORION VERSION
+###
+GET http://localhost:1026/version
+
+###
+
+
+###
+#VERSION IOT AGENT 
+curl -X GET "http://localhost:4041/iot/about"
+###
+
+### saber grupos de dispositivos registrados
+curl -X GET 'http://localhost:4041/iot/services' \
+  -H 'Fiware-Service: pamplona' \
+  -H 'Fiware-ServicePath: /urbanmobility'
+
+### registrar un grupo de dispositivos
+curl -X POST "http://localhost:4041/iot/services" \
+  -H "Content-Type: application/json" \
+  -H "fiware-service: pamplona" \
+  -H "fiware-servicepath: /urbanmobility" \
+  -d '{
+    "services": [{
+      "apikey": "123456789abcd",
+      "cbroker": "http://orion:1026",
+      "entity_type": "vehicle",
+      "resource": "/iot/json"
+    }]
+  }'
+
+###SUBSCRIPCIONES EN ORION DE CYGNUS
+###
+curl -X GET http://localhost:1026/v2/subscriptions/ \
+  -H "Fiware-Service: pamplona" \
+  -H "Fiware-ServicePath: /urbanmobility"
+
+###
+
+curl -iX POST \
+  'http://localhost:1026/v2/subscriptions' \
+  -H 'Content-Type: application/json' \
+  -H 'fiware-service: pamplona' \
+  -H 'fiware-servicepath: /urbanmobility' \
+  -d '{
+  "description": "Notify kafka of all context changes",
+  "subject": {
+    "entities": [
+      {
+        "idPattern": ".*"
+      }
+    ]
+  },
+  "notification": {
+    "http": {
+      "url": "http://fastapi:8000/notify"
+    }
+  },
+  "throttling": 0
+}'
+###

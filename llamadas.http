@@ -108,7 +108,7 @@ curl -X POST "http://{{host_server}}:4041/iot/services" \
   -d '{
     "services": [{
       "apikey": "123456789abcd",
-      "cbroker": "http://{{host_server}}:1026",
+      "cbroker": "http://orion:1026",
       "entity_type": "vehicle",
       "resource": "/iot/json"
     }]
@@ -515,6 +515,29 @@ curl -iX POST \
   "notification": {
     "http": {
       "url": "http://cygnus:5055/notify"
+    }
+  },
+  "throttling": 0
+}'
+###
+
+curl -iX POST \
+  'http://localhost:1026/v2/subscriptions' \
+  -H 'Content-Type: application/json' \
+  -H 'fiware-service: pamplona' \
+  -H 'fiware-servicepath: /urbanmobility' \
+  -d '{
+  "description": "Notify kafka of all context changes",
+  "subject": {
+    "entities": [
+      {
+        "idPattern": ".*"
+      }
+    ]
+  },
+  "notification": {
+    "http": {
+      "url": "http://localhost:8000/notify"
     }
   },
   "throttling": 0
