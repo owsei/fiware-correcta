@@ -79,9 +79,16 @@ curl -X GET http://localhost:1026/v2/subscriptions/ \
   -H "Fiware-ServicePath: /urbanmobility"
 
 ###
+### DELETE SUBSCRIPCIONES EN ORION DE CYGNUS
 
+curl -X DELETE  http://localhost:1026/v2/subscriptions/6a31332728214c0f5a0b24c4 \
+  -H "Fiware-Service: pamplona" \
+  -H "Fiware-ServicePath: /urbanmobility"
+
+
+### SUBSCRIPCIONES EN ORION DE KAFKA
 curl -iX POST \
-  'http://localhost:1026/v2/subscriptions' \
+  'http://localhost:1026/v2/subscriptions/' \
   -H 'Content-Type: application/json' \
   -H 'fiware-service: pamplona' \
   -H 'fiware-servicepath: /urbanmobility' \
@@ -113,7 +120,7 @@ curl -i -X POST http://localhost:8083/connectors \
       "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
       "tasks.max": "1",
       "topics": "pamplona_vehicle",
-      "connection.url": "jdbc:postgresql://timescale:5432/pamplona",
+      "connection.url": "jdbc:postgresql://timescale:5432/fiware",
       "connection.user": "admin",
       "connection.password": "admin",
       "auto.create": "true",

@@ -1,9 +1,10 @@
+@postgres-sink='
 {
   "name": "postgres-sink",
   "config": {
     "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
 
-    "topics": "clientes",
+    "topics": "pamplona_vehicle",
 
     "connection.url": "jdbc:postgresql://timescale:5432/fiware",
     "connection.user": "admin",
@@ -17,10 +18,42 @@
     "pk.mode": "record_value",
     "pk.fields": "id",
 
-    "table.name.format": "clientes",
+    "table.name.format": "pamplona_vehicle",
 
     "key.converter": "org.apache.kafka.connect.storage.StringConverter",
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
     "value.converter.schemas.enable": "false"
   }
-}
+}'
+
+#### 
+curl -X POST \
+  http://localhost:8083/connectors \
+  -H "Content-Type: application/json" \
+  -d '{
+        "name": "postgres-sink",
+        "config": {
+          "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+
+          "topics": "pamplona_vehicle",
+
+          "connection.url": "jdbc:postgresql://timescale:5432/fiware",
+          "connection.user": "admin",
+          "connection.password": "admin",
+
+          "auto.create": "false",
+          "auto.evolve": "true",
+
+          "insert.mode": "upsert",
+
+          "pk.mode": "record_value",
+          "pk.fields": "id",
+
+          "table.name.format": "pamplona_vehicle",
+
+          "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+          "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+          "value.converter.schemas.enable": "false"
+        }
+      }'
+

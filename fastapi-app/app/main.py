@@ -32,6 +32,13 @@ producer = Producer({
     "bootstrap.servers": "kafka:9092"
 })
 
+consumer = Consumer({
+    'bootstrap.servers': 'localhost:9092',
+    'group.id': 'postgres-consumer',
+    'auto.offset.reset': 'earliest'
+})
+
+
 engine = create_engine(
     "postgresql://admin:admin@timescale:5432/pamplona"
 )
@@ -70,7 +77,6 @@ def ngsi_to_flat(entity,fiware_service,fiware_servicepath):
     print(f"Flat entity: {json.dumps(flat)}")
     return flat
 
-
 ################ KAFKA NOTIFICATION ENDPOINT ####################
 @app.post("/notify")
 async def notify(request: Request):
@@ -93,7 +99,6 @@ async def notify(request: Request):
     return {"status": "ok"}
 
 ############## KAFKA NOTIFICATION ENDPOINT ####################
-
 
 @app.get("/")
 def read_root():
