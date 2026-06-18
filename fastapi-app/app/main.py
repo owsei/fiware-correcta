@@ -71,7 +71,7 @@ def ngsi_to_flat(entity,fiware_service,fiware_servicepath):
     return flat
 
 
-
+################ KAFKA NOTIFICATION ENDPOINT ####################
 @app.post("/notify")
 async def notify(request: Request):
     fiware_service = request.headers.get("fiware-service")
@@ -92,32 +92,7 @@ async def notify(request: Request):
     producer.flush()
     return {"status": "ok"}
 
-
-    # print(f"Payload received: {json.dumps(payload)}")
-    
-    # if 'entity_type' not in payload:
-    #     print("Error: 'entity_type' not found in payload")
-    #     payload['entity_type'] = 'events'
-    #     print(f"Producing message to topic: fiware-events")
-    # else:
-    #     print(f"Producing message to topic: fiware-{payload['entity_type']}")
-    
-    # ### TIENE DATOS PARA PRODUCIR EN KAFKA
-    # if 'data' not in payload:
-    #     print("Error: 'data' not found in payload")
-    #     return {"status": "NO DATA FOUND"}
-    # else:
-    #     data=payload["data"]
-    #     print(f"Data type: {type(data)}")
-    #     print(json.dumps(payload, indent=2))
-
-    #     # producer.produce(
-    #     #     topic="fiware-"+ payload['entity_type'],
-    #     #     value=json.dumps(payload.data).encode("utf-8")
-    #     # )
-    #     print(f"Producing message to topic:{json.dumps(payload.data)}")
-    #     producer.flush()
-    #     return {"status": "ok"}
+############## KAFKA NOTIFICATION ENDPOINT ####################
 
 
 @app.get("/")

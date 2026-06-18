@@ -1,0 +1,26 @@
+{
+  "name": "postgres-sink",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+
+    "topics": "clientes",
+
+    "connection.url": "jdbc:postgresql://timescale:5432/fiware",
+    "connection.user": "admin",
+    "connection.password": "admin",
+
+    "auto.create": "false",
+    "auto.evolve": "true",
+
+    "insert.mode": "upsert",
+
+    "pk.mode": "record_value",
+    "pk.fields": "id",
+
+    "table.name.format": "clientes",
+
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "false"
+  }
+}
